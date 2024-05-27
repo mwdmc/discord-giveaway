@@ -731,7 +731,7 @@ class GiveawaysManager extends EventEmitter {
                     })
                     .catch(() => {});
             };
-
+            await interaction.deferUpdate();
             if (giveaway.buttons.join.custom_id === interaction.customId) {
                 // If only one button is used, remove the user if he has already joined
                 if (!giveaway.buttons.leave && giveaway.entrantIds.includes(interaction.member.id)) {
