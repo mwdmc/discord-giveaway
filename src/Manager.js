@@ -34,7 +34,7 @@ class GiveawaysManager extends EventEmitter {
     constructor(client, options, init = true) {
         super();
         if (!client?.options) throw new Error(`Client is a required option. (val=${client})`);
-        if (
+        if (!options?.ignoreMissingIntents &&
             !new Discord.IntentsBitField(client.options.intents).has(
                 Discord.IntentsBitField.Flags.GuildMessageReactions
             )
@@ -330,7 +330,7 @@ class GiveawaysManager extends EventEmitter {
             } else {
                 const collector = giveaway.message.createMessageComponentCollector({
                     filter: async (interaction) =>
-                        interaction.customId === giveaway.buttons.join.custom_id &&
+                        interaction.customId === "giveawayBtn" &&
                         (await giveaway.checkWinnerEntry(interaction.user)),
                     componentType: Discord.ComponentType.Button
                 });
@@ -715,7 +715,7 @@ class GiveawaysManager extends EventEmitter {
             this.emit(Events.GiveawayMemberLeft, giveaway, member, messageReaction);
         });
 
-        this.client.on(Discord.Events.InteractionCreate, async (interaction) => {
+        await this.client.on(Discord.Events.InteractionCreate, async (interaction) => {
             if (!interaction.isButton() || !interaction.guild?.available || !interaction.channel?.viewable) return;
             const giveaway = this.giveaways.find((g) => g.messageId === interaction.message.id);
             if (!giveaway || !giveaway.buttons || giveaway.ended) return;
@@ -731,8 +731,8 @@ class GiveawaysManager extends EventEmitter {
                     })
                     .catch(() => {});
             };
-            await interaction.deferUpdate();
-            if (giveaway.buttons.join.custom_id === interaction.customId) {
+
+            if (interaction.customId === "giveawayBtn") {
                 // If only one button is used, remove the user if he has already joined
                 if (!giveaway.buttons.leave && giveaway.entrantIds.includes(interaction.member.id)) {
                     const index = giveaway.entrantIds.indexOf(interaction.member.id);
