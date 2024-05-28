@@ -686,7 +686,7 @@ class Giveaway extends EventEmitter {
             if (options.newLastChance && typeof options.newLastChance === 'object' && !this.isDrop) {
                 this.options.lastChance = deepmerge(this.options.lastChance || {}, options.newLastChance);
             }
-            if (this.newButtons?.join && this.buttons) this.buttons = this.newButtons;
+            if (options.newButtons?.join && this.buttons) this.buttons = options.newButtons;
 
             await this.manager.editGiveaway(this.messageId, this.data);
             if (this.remainingTime <= 0) this.manager.end(this.messageId).catch(() => {});
@@ -696,6 +696,7 @@ class Giveaway extends EventEmitter {
                     .edit({
                         content: this.fillInString(this.messages.giveaway),
                         embeds: [embed],
+                        components: this.fillInComponents(this.messages.buttons),
                         allowedMentions: this.allowedMentions
                     })
                     .catch(() => {});
